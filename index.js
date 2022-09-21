@@ -1,7 +1,7 @@
 const goAddon = require('./build/Release/go-addon')
 
-console.log(goAddon.process(
+goAddon.process(
     'greeter',
     JSON.stringify({name:'Markus'}),
     JSON.stringify({}),
-    ));
+).then(console.log).catch(console.error);

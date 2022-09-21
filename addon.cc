@@ -50,21 +50,28 @@ NODE_MODULE(myGoAddon, Init)
 #include <napi.h>
 #include "lib/libgo.h"
 
-Napi::String Greeting(const Napi::CallbackInfo& info) {
+Napi::Promise Greeting(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
+    auto deferred = Napi::Promise::Deferred::New(env);
 
     if (info.Length() < 3) {
         Napi::TypeError::New(env, "3 Parameter expected").ThrowAsJavaScriptException();
     }
 
     if (!info[0].IsString()) {
-        Napi::TypeError::New(env, "action name required").ThrowAsJavaScriptException();
+        deferred.Reject(
+            Napi::TypeError::New(env, "action name required").Value()
+        );
     }
     if (!info[1].IsString()) {
-        Napi::TypeError::New(env, "action parameter required").ThrowAsJavaScriptException();
+        deferred.Reject(
+            Napi::TypeError::New(env, "action parameter required").Value()
+        );
     }
     if (!info[2].IsString()) {
-        Napi::TypeError::New(env, "config required").ThrowAsJavaScriptException();
+        deferred.Reject(
+            Napi::TypeError::New(env, "config required").Value()
+        );
     }
 
     std::string actionName = info[0].ToString().Utf8Value();
@@ -73,7 +80,8 @@ Napi::String Greeting(const Napi::CallbackInfo& info) {
 
     char *res = Process(actionName.c_str(), actionParameter.c_str(), config.c_str());
 
-    return Napi::String::New(env, res);
+    deferred.Resolve(Napi::String::New(env, res));
+    return deferred.Promise();
 }
 
 Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
