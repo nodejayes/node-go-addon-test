@@ -9,8 +9,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "node-gyp": "^9.1.0"
+    "node-gyp": "^9.1.0",
+    "node-addon-api": "^5.0.0"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "gypfile": true
 }

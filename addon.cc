@@ -1,4 +1,4 @@
-#include <node.h>
+/*#include <node.h>
 #include "lib/libgo.h"
 
 using v8::Exception;
@@ -45,3 +45,40 @@ void Init (Local<Object> exports) {
 }
 
 NODE_MODULE(myGoAddon, Init)
+*/
+
+#include <napi.h>
+#include "lib/libgo.h"
+
+Napi::String Greeting(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (info.Length() < 3) {
+        Napi::TypeError::New(env, "3 Parameter expected").ThrowAsJavaScriptException();
+    }
+
+    if (!info[0].IsString()) {
+        Napi::TypeError::New(env, "action name required").ThrowAsJavaScriptException();
+    }
+    if (!info[1].IsString()) {
+        Napi::TypeError::New(env, "action parameter required").ThrowAsJavaScriptException();
+    }
+    if (!info[2].IsString()) {
+        Napi::TypeError::New(env, "config required").ThrowAsJavaScriptException();
+    }
+
+    std::string actionName = info[0].ToString().Utf8Value();
+    std::string actionParameter = info[1].ToString().Utf8Value();
+    std::string config = info[2].ToString().Utf8Value();
+
+    char *res = Process(actionName.c_str(), actionParameter.c_str(), config.c_str());
+
+    return Napi::String::New(env, res);
+}
+
+Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
+  exports.Set("process", Napi::Function::New(env, Greeting));
+  return exports;
+}
+
+NODE_API_MODULE(myGoAddon, InitAll)
